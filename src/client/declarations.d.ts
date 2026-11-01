@@ -49,4 +49,10 @@ interface Window {
      */
     NAME?: string;
   };
+
+  /**
+   * API responses fetched during SSR, keyed like useApi().
+   * Written by the server's streamed <script> tags, read on hydration.
+   */
+  __API_DATA__?: Record<string, unknown>;
 }

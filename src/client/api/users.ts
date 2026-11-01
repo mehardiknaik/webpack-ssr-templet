@@ -6,13 +6,27 @@ interface User {
   email: string
 }
 
+async function fetchWrapper(
+  input: RequestInfo | URL,
+  init?: RequestInit
+): Promise<Response> {
+  const response = await fetch(input, init);
+
+  if (!response.ok) {
+    throw new Error(
+      `HTTP Error: ${response.status} ${response.statusText}`
+    );
+  }
+
+  return response;
+}
 
 export async function fetchUsers(): Promise<User[]> {
-  const res = await fetch(`https://jsonplaceholder.typicode.com/users`)
+  const res = await fetchWrapper(`https://jsonplaceholder.typicode.com/users`)
   return res.json();
 }
 
 export async function fetchUser(id: string): Promise<User | undefined> {
-  const res = await fetch(`https://jsonplaceholder.typicode.com/users/${id}`)
+  const res = await fetchWrapper(`https://jsonplaceholder.typicode.com/users/${id}`)
   return res.json();
 }

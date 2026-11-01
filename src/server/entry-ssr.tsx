@@ -3,6 +3,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { renderToPipeableStream } from 'react-dom/server';
 import { StaticRouter, matchRoutes } from 'react-router';
 import Root from '@/client/Root';
+import { dehydrate, type ApiCache } from '@/client/api/ApiCache';
 import routes, { basename, type RouteHandle } from '@/client/routes';
 
 /** chunk name -> emitted JS/CSS files (dist/client/chunks-manifest.json) */
@@ -58,9 +59,13 @@ export function render(
         .replace('</head>', `${chunkLinks(chunks, manifest)}</head>`)
         .split(PLACEHOLDER);
 
+    // Filled by useApi() during render; resolved entries are streamed to the client
+    const apiCache: ApiCache = new Map();
+    const sentKeys = new Set<string>();
+
     const app = (
         <StaticRouter location={url} basename={basename}>
-            <Root />
+            <Root apiCache={apiCache} />
         </StaticRouter>
     );
 
@@ -76,13 +81,28 @@ export function render(
             res.setHeader('Content-Type', 'text/html; charset=utf-8');
             res.write(head);
 
+            // React may split one write batch across chunks, so data <script>s only go
+            // between batches. They go before the next batch (the boundaries that use the
+            // data), never at the start of the shell, so they don't precede the app markup.
+            let betweenBatches = false;
             const transform = new Transform({
                 transform(chunk, _encoding, callback) {
+                    if (betweenBatches) {
+                        betweenBatches = false;
+                        const scripts = dehydrate(apiCache, sentKeys);
+                        if (scripts) this.push(scripts);
+                    }
                     callback(null, chunk);
                 },
                 flush(callback) {
-                    this.push(tail);
+                    this.push(dehydrate(apiCache, sentKeys) + tail);
                     callback();
+                }
+            });
+            // React calls destination.flush() after each write batch
+            Object.assign(transform, {
+                flush() {
+                    betweenBatches = true;
                 }
             });
             transform.pipe(res);
