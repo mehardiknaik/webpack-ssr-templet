@@ -12,7 +12,7 @@ const config: Configuration = {
   entry: { app: './src/client/index.tsx' },
   output: {
     // // Absolute so assets resolve on nested routes (e.g. /users/1)
-    // publicPath: process.env.PUBLIC_PATH || '/'
+    publicPath: process.env.PUBLIC_PATH || '/'
   },
   module: {
     rules: [
