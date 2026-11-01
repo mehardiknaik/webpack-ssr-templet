@@ -22,6 +22,7 @@ const Users = () => {
 
   return (
     <section className={style.container}>
+      <title>Webpack SSR Template - Users</title>
       <h1>Users</h1>
       {/* Heading is sent in the shell; the list streams in when fetchUsers() resolves */}
       <Suspense fallback={<p>Loading users...</p>}>

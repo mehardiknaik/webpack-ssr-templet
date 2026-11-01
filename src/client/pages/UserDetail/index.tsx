@@ -12,10 +12,11 @@ const UserInfo = ({ id }: { id: string }) => {
   }
 
   return (
-    <>
+    <div>
+      <title>{`Webpack SSR Template - ${user.name}`}</title>
       <h1>{user.name}</h1>
       <p>{user.email}</p>
-    </>
+    </div>
   );
 };
 
