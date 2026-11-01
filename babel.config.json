@@ -1,0 +1,67 @@
+{
+  "presets": [
+    [
+      "@babel/preset-react",
+      {
+        "runtime": "automatic"
+      }
+    ],
+    "@babel/preset-typescript"
+  ],
+  "plugins": [
+    "@babel/plugin-transform-optional-chaining",
+    "@babel/plugin-transform-nullish-coalescing-operator"
+  ],
+  "overrides": [
+    {
+      "test": "./src",
+      "presets": [
+        [
+          "@babel/preset-env",
+          {
+            "targets": {
+              "chrome": "49",
+              "firefox": "52",
+              "safari": "10",
+              "edge": "14"
+            },
+            "useBuiltIns": "usage",
+            "corejs": "3.39",
+            "modules": false
+          }
+        ]
+      ],
+      "plugins": [
+        [
+          "@babel/plugin-transform-runtime",
+          {
+            "regenerator": false,
+            "useESModules": true
+          }
+        ]
+      ]
+    },
+    {
+      "test": "./node_modules",
+      "presets": [
+        [
+          "@babel/preset-env",
+          {
+            "targets": {
+              "chrome": "49",
+              "firefox": "52",
+              "safari": "10",
+              "edge": "14"
+            },
+            "modules": false
+          }
+        ]
+      ]
+    }
+  ],
+  "env": {
+    "development": {
+      "plugins": []
+    }
+  }
+}

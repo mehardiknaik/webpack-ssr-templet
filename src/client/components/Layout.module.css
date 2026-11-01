@@ -1,0 +1,29 @@
+.layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f0f0f0;
+}
+
+.nav {
+  display: flex;
+  gap: 16px;
+  padding: 16px 24px;
+  background-color: #20232a;
+}
+
+.link {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.active {
+  color: #61dafb;
+  font-weight: bold;
+}
+
+.main {
+  flex: 1;
+  padding: 24px;
+  text-align: center;
+}

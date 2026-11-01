@@ -1,0 +1,92 @@
+{
+  "name": "webpack-templet",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "webpack serve --config webpack.config.dev.ts",
+    "start:ssr": "ts-node scripts/devSsr.ts",
+    "build:client": "webpack --config webpack.config.prod.ts",
+    "build:ssr": "webpack --config webpack.config.prod.ts && webpack --config webpack.config.server.ts --mode production",
+    "build": "npm run build:client && npm run build:ssr",
+    "preview:ssr": "node dist/server/server.js",
+    "preview": "serve -s dist/client",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "prepare": "husky"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "core-js": "^3.49.0",
+    "express": "^5.3.0",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "react-router": "^8.5.1",
+    "regenerator-runtime": "^0.14.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.29.0",
+    "@babel/plugin-transform-nullish-coalescing-operator": "^7.29.7",
+    "@babel/plugin-transform-optional-chaining": "^7.29.7",
+    "@babel/plugin-transform-runtime": "^7.29.0",
+    "@babel/preset-env": "^7.29.5",
+    "@babel/preset-react": "^7.28.5",
+    "@babel/preset-typescript": "^7.28.5",
+    "@babel/runtime": "^7.29.2",
+    "@types/dotenv-webpack": "^7.0.8",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.9.1",
+    "@types/progress-bar-webpack-plugin": "^2.1.6",
+    "@types/react": "^19.2.15",
+    "@types/react-dom": "^19.2.3",
+    "@types/webpack-bundle-analyzer": "^4.7.0",
+    "@typescript-eslint/eslint-plugin": "^8.59.4",
+    "@typescript-eslint/parser": "^8.59.4",
+    "babel-loader": "^10.1.1",
+    "code-inspector-plugin": "^2.0.9",
+    "copy-webpack-plugin": "^14.0.0",
+    "css-loader": "^7.1.4",
+    "css-minimizer-webpack-plugin": "^8.0.0",
+    "dotenv": "^18.0.5",
+    "dotenv-webpack": "^9.0.0",
+    "eslint": "^9.39.4",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "file-loader": "^6.2.0",
+    "html-webpack-plugin": "^5.6.7",
+    "husky": "^9.1.7",
+    "javascript-obfuscator": "^5.8.1",
+    "lint-staged": "^16.4.0",
+    "mini-css-extract-plugin": "^2.10.2",
+    "prettier": "^3.8.3",
+    "progress-bar-webpack-plugin": "^2.1.0",
+    "serve": "^14.2.6",
+    "style-loader": "^4.0.0",
+    "terser-webpack-plugin": "^5.6.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.59.4",
+    "typescript-plugin-css-modules": "^5.2.0",
+    "webpack": "^5.107.1",
+    "webpack-bundle-analyzer": "^5.3.0",
+    "webpack-cli": "^7.0.2",
+    "webpack-dev-server": "^5.2.4",
+    "webpack-merge": "^6.0.1",
+    "webpack-obfuscator": "^3.6.1"
+  },
+  "lint-staged": {
+    "src/**/*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "src/**/*.{css,scss}": [
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  }
+}
