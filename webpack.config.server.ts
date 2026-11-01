@@ -31,7 +31,7 @@ export const createServerConfig = (mode: Mode): Configuration => {
     output: {
       path: path.resolve(__dirname, 'dist/server'),
       filename: '[name].js',
-      publicPath: process.env.PUBLIC_PATH || './',
+      publicPath: process.env.PUBLIC_PATH || '/',
       library: { type: 'commonjs2' },
       clean: true
     },
