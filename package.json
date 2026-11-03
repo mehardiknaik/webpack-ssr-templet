@@ -7,7 +7,7 @@
     "start": "webpack serve --config webpack.config.dev.ts",
     "start:ssr": "ts-node scripts/devSsr.ts",
     "build:client": "webpack --config webpack.config.prod.ts",
-    "build:ssr": "webpack --config webpack.config.prod.ts && webpack --config webpack.config.server.ts --mode production",
+    "build:ssr": "webpack --config webpack.config.server.ts --mode production",
     "build": "npm run build:client && npm run build:ssr",
     "preview:ssr": "node dist/server/server.js",
     "preview": "serve -s dist/client",

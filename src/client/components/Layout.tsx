@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
-import { NavLink, Outlet } from 'react-router';
+import { NavLink, Outlet, useLocation } from 'react-router';
 import style from './Layout.module.css';
+import { ErrorBoundary } from './ErrorBoundary';
 
 const links = [
   { to: '/', label: 'Home' },
@@ -9,6 +10,7 @@ const links = [
 ];
 
 const Layout = () => {
+  const { pathname } = useLocation()
   return (
     <div className={style.layout}>
       <nav className={style.nav}>
@@ -26,7 +28,9 @@ const Layout = () => {
       <main className={style.main}>
         {/* Stays mounted across navigations, so router transitions keep the old page until the next chunk loads */}
         <Suspense fallback={<p>Loading...</p>}>
-          <Outlet />
+          <ErrorBoundary resetKeys={[pathname]}>
+            <Outlet />
+          </ErrorBoundary>
         </Suspense>
       </main>
     </div>
