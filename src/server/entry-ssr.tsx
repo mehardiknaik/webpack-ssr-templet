@@ -35,6 +35,21 @@ function chunkLinks(chunks: string[], manifest: ChunksManifest) {
         .join('');
 }
 
+function setSsr(html: string) {
+    return html.replace(
+        /<html([^>]*)>/i,
+        (match, attributes) => {
+            if (/data-render-mode=/i.test(attributes)) {
+                return match.replace(
+                    /data-render-mode=["'][^"']*["']/i,
+                    'data-render-mode="ssr"'
+                );
+            }
+            return `<html${attributes} data-render-mode="ssr">`;
+        }
+    );
+}
+
 /**
  * Streams the React app into the HTML template at PLACEHOLDER.
  * Falls back to the plain template (client-side render) if the shell fails.
@@ -55,7 +70,7 @@ export function render(
     const chunks = (matches || [])
         .map(({ route }) => (route.handle as RouteHandle | undefined)?.chunk)
         .filter((chunk): chunk is string => !!chunk);
-    const [head, tail] = template
+    const [head, tail] = setSsr(template)
         .replace('</head>', `${chunkLinks(chunks, manifest)}</head>`)
         .split(PLACEHOLDER);
 
