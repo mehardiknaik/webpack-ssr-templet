@@ -43,7 +43,7 @@ jobs:
 
       - name: Build the client app
         env:
-          PUBLIC_PATH: ${{ steps.deployment.outputs.page_url }}
+          PUBLIC_PATH: "/webpack-ssr-templet/"
         run: npm run build:client
 
       - name: Setup Pages
