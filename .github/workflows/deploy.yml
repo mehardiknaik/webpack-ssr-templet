@@ -42,6 +42,8 @@ jobs:
         run: npm install
 
       - name: Build the client app
+        env:
+          PUBLIC_PATH: ${{ steps.deployment.outputs.page_url }}
         run: npm run build:client
 
       - name: Setup Pages
