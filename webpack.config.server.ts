@@ -1,5 +1,5 @@
 import path from 'path';
-import { Configuration, DefinePlugin, ProvidePlugin } from 'webpack';
+import { Configuration, DefinePlugin, ProvidePlugin, optimize } from 'webpack';
 import DotenvWebpackPlugin from 'dotenv-webpack';
 import { codeInspectorPlugin } from 'code-inspector-plugin';
 import pkg from './package.json';
@@ -94,6 +94,7 @@ export const createServerConfig = (mode: Mode): Configuration => {
     },
     optimization: {
       splitChunks: false,
+      runtimeChunk: false,
       minimize: true,
       minimizer: [
         new TerserPlugin({
@@ -110,12 +111,16 @@ export const createServerConfig = (mode: Mode): Configuration => {
       new ProvidePlugin({
         React: 'react'
       }),
+      new optimize.LimitChunkCountPlugin({
+        maxChunks: 2,
+      }),
       new DotenvWebpackPlugin({
         defaults: true,
         allowEmptyValues: true,
         safe: true,
         // Keep real process.env (PORT, etc.) available at runtime on the server
-        ignoreStub: true
+        ignoreStub: true,
+        systemvars: true
       }),
       new DefinePlugin({
         __DEV__: JSON.stringify(isDev),
