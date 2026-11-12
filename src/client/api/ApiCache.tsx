@@ -1,4 +1,13 @@
-import { createContext, use, useContext, useState, type ReactNode } from 'react';
+import {
+  createContext,
+  use,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+  useTransition,
+  type ReactNode,
+} from 'react';
 
 export type ApiCache = Map<string, Promise<unknown>>;
 
@@ -9,7 +18,13 @@ type TrackedPromise<T> = Promise<T> & {
   reason?: unknown;
 };
 
-const ApiCacheContext = createContext<ApiCache | null>(null);
+interface ApiCacheContextValue {
+  cache: ApiCache;
+  /** Drops cached entries (all when no key) so the next render refetches them */
+  invalidate: (key?: string) => void;
+}
+
+const ApiCacheContext = createContext<ApiCacheContextValue | null>(null);
 
 /**
  * Holds request promises so use() gets the same promise across re-renders.
@@ -17,9 +32,48 @@ const ApiCacheContext = createContext<ApiCache | null>(null);
  * The server passes its own cache so entry-ssr can stream the resolved data.
  */
 export const ApiCacheProvider = ({ cache, children }: { cache?: ApiCache; children: ReactNode }) => {
-  const [value] = useState<ApiCache>(() => cache ?? new Map());
+  const [store] = useState<ApiCache>(() => cache ?? new Map());
+  // Bumped on invalidate so every useApi consumer re-renders and refetches
+  const [version, setVersion] = useState(0);
+
+  const invalidate = useCallback(
+    (key?: string) => {
+      if (key === undefined) store.clear();
+      else store.delete(key);
+
+      // Also drop streamed server data, or serverData() would return the stale value
+      if (typeof window !== 'undefined' && window.__API_DATA__) {
+        if (key === undefined) window.__API_DATA__ = {};
+        else delete window.__API_DATA__[key];
+      }
+      setVersion((v) => v + 1);
+    },
+    [store]
+  );
+
+  // version in deps gives consumers a new context value after each invalidate
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const value = useMemo(() => ({ cache: store, invalidate }), [store, invalidate, version]);
   return <ApiCacheContext value={value}>{children}</ApiCacheContext>;
 };
+
+/**
+ * Manual refresh for cached API data.
+ * refresh('users') refetches one key; refresh() refetches everything.
+ * Runs in a transition, so the current data stays on screen while the new request loads.
+ */
+export function useApiRefresh(): { refresh: (key?: string) => void; isRefreshing: boolean } {
+  const ctx = useContext(ApiCacheContext);
+  if (!ctx) throw new Error('useApiRefresh must be used inside <ApiCacheProvider>');
+
+  const { invalidate } = ctx;
+  const [isRefreshing, startTransition] = useTransition();
+  const refresh = useCallback(
+    (key?: string) => startTransition(() => invalidate(key)),
+    [invalidate]
+  );
+  return { refresh, isRefreshing };
+}
 
 function track<T>(promise: Promise<T>): TrackedPromise<T> {
   const tracked = promise as TrackedPromise<T>;
@@ -55,8 +109,9 @@ function serverData(key: string): { value: unknown } | undefined {
  * Suspends until fetcher() resolves. Wrap the caller in <Suspense>.
  */
 export function useApi<T>(key: string, fetcher: () => Promise<T>): T {
-  const cache = useContext(ApiCacheContext);
-  if (!cache) throw new Error('useApi must be used inside <ApiCacheProvider>');
+  const ctx = useContext(ApiCacheContext);
+  if (!ctx) throw new Error('useApi must be used inside <ApiCacheProvider>');
+  const { cache } = ctx;
 
   let promise = cache.get(key) as Promise<T> | undefined;
   if (!promise) {
