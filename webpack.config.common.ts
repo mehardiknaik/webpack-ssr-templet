@@ -73,6 +73,9 @@ const config: Configuration = {
         removeScriptTypeAttributes: true,
         removeStyleLinkTypeAttributes: true,
         useShortDoctype: true
+      },
+      templateParameters: {
+        __BUILD_DATE__: new Date().toISOString(),
       }
     }),
     new ProvidePlugin({
