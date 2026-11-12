@@ -1,5 +1,5 @@
 import path from 'path';
-import { Configuration, DefinePlugin, ProvidePlugin, optimize } from 'webpack';
+import { Configuration, DefinePlugin, ProvidePlugin } from 'webpack';
 import DotenvWebpackPlugin from 'dotenv-webpack';
 import { codeInspectorPlugin } from 'code-inspector-plugin';
 import pkg from './package.json';
@@ -45,7 +45,14 @@ export const createServerConfig = (mode: Mode): Configuration => {
       rules: [
         {
           test: /\.(ts|tsx|js|jsx|mjs|cjs)$/i,
-          use: 'babel-loader'
+          use: {
+            loader: 'babel-loader',
+            options: {
+              plugins: [
+                'babel-plugin-dynamic-import-node'
+              ]
+            }
+          }
         },
         {
           test: /\.(woff|woff2|eot|ttf|otf)$/i,
@@ -110,9 +117,6 @@ export const createServerConfig = (mode: Mode): Configuration => {
     plugins: [
       new ProvidePlugin({
         React: 'react'
-      }),
-      new optimize.LimitChunkCountPlugin({
-        maxChunks: 2,
       }),
       new DotenvWebpackPlugin({
         defaults: true,
