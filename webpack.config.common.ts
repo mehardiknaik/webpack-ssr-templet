@@ -67,7 +67,7 @@ const config: Configuration = {
       inject: true,
       // Absolute so index.html works on nested routes (e.g. /users/1) without SSR.
       // The SSR renderer rewrites this prefix to its own publicPath.
-      publicPath: process.env.PUBLIC_PATH || '/',
+      // publicPath: process.env.PUBLIC_PATH || '',
       // Keep comments: SSR injects markup at <!--html-placeholder-->
       minify: {
         collapseWhitespace: true,
