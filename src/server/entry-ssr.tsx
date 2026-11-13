@@ -4,13 +4,23 @@ import { renderToPipeableStream } from 'react-dom/server';
 import { StaticRouter, matchRoutes } from 'react-router';
 import Root from '@/client/Root';
 import { dehydrate, type ApiCache } from '@/client/api/ApiCache';
-import routes, { basename, type RouteHandle } from '@/client/routes';
+import routes, { getBasename, type RouteHandle } from '@/client/routes';
 
 /** chunk name -> emitted JS/CSS files (dist/client/chunks-manifest.json) */
 export type ChunksManifest = Record<string, string[]>;
 
+export interface RenderOptions {
+    /**
+     * Where the app and its assets are served, e.g. "/app/". Used for asset URLs,
+     * lazy chunks (__webpack_public_path__) and the router basename.
+     * Defaults to PUBLIC_PATH from .env.
+     */
+    publicPath?: string;
+}
+
 const PLACEHOLDER = '<!--html-placeholder-->';
-const PUBLIC_PATH = process.env.PUBLIC_PATH || '/';
+// Prefix the HTML template's asset URLs were built with (HtmlWebpackPlugin publicPath)
+const BUILD_PUBLIC_PATH = process.env.PUBLIC_PATH || '/';
 const ABORT_DELAY = 10000;
 // Crawlers / link-preview bots get the full HTML in one go instead of a stream
 const BOT_USER_AGENT =
@@ -21,7 +31,7 @@ const BOT_USER_AGENT =
  * (styled on first paint, without shipping other pages' CSS) and preload for JS
  * (chunk downloads in parallel with the entry, so hydration isn't delayed).
  */
-function chunkLinks(chunks: string[], manifest: ChunksManifest) {
+function chunkLinks(chunks: string[], manifest: ChunksManifest, publicPath: string) {
     // Files of the "app" entry are already in index.html (HtmlWebpackPlugin)
     const entryFiles = new Set(manifest.app || []);
     const files = new Set(chunks.flatMap((chunk) => manifest[chunk] || []));
@@ -29,10 +39,32 @@ function chunkLinks(chunks: string[], manifest: ChunksManifest) {
         .filter((file) => !entryFiles.has(file))
         .map((file) =>
             file.endsWith('.css')
-                ? `<link rel="stylesheet" href="${PUBLIC_PATH}${file}">`
-                : `<link rel="preload" as="script" href="${PUBLIC_PATH}${file}">`
+                ? `<link rel="stylesheet" href="${publicPath}${file}">`
+                : `<link rel="preload" as="script" href="${publicPath}${file}">`
         )
         .join('');
+}
+
+/** "app" -> "/app/", "https://cdn.x/app" -> "https://cdn.x/app/" */
+function normalizePublicPath(publicPath: string) {
+    if (/^([a-z][a-z\d+.-]*:)?\/\//i.test(publicPath)) return publicPath.replace(/\/?$/, '/');
+    return `/${publicPath}/`.replace(/\/{2,}/g, '/');
+}
+
+/**
+ * Moves the template's src/href URLs from the build-time prefix to publicPath and
+ * exposes publicPath to the client (read by src/client/publicPath.ts).
+ */
+function applyPublicPath(html: string, publicPath: string) {
+    let result = html;
+    if (publicPath !== BUILD_PUBLIC_PATH) {
+        const escaped = BUILD_PUBLIC_PATH.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        // (?!\/) skips protocol-relative URLs ("//cdn...") when the build prefix is "/"
+        const attr = new RegExp(`(\\s(?:src|href)=["'])${escaped}(?!\\/)`, 'gi');
+        result = result.replace(attr, `$1${publicPath}`);
+    }
+    const value = JSON.stringify(publicPath).replace(/</g, '\\u003c');
+    return result.replace(/<head[^>]*>/i, `$&<script>window.__PUBLIC_PATH__=${value}</script>`);
 }
 
 function setSsr(html: string) {
@@ -58,10 +90,16 @@ export function render(
     req: IncomingMessage,
     res: ServerResponse,
     template: string,
-    manifest: ChunksManifest = {}
+    manifest: ChunksManifest = {},
+    { publicPath: rawPublicPath = BUILD_PUBLIC_PATH }: RenderOptions = {}
 ) {
     const url = req.url || '/';
     let didError = false;
+    const publicPath = normalizePublicPath(rawPublicPath);
+    const basename = getBasename(publicPath);
+    // Asset imports (images, fonts) rendered on the server must match the client's URLs.
+    // Module-global: every request served by one process should use the same publicPath.
+    __webpack_public_path__ = publicPath;
 
     // Catch-all "*" route means no page matched
     const matches = matchRoutes(routes, url, basename);
@@ -70,8 +108,8 @@ export function render(
     const chunks = (matches || [])
         .map(({ route }) => (route.handle as RouteHandle | undefined)?.chunk)
         .filter((chunk): chunk is string => !!chunk);
-    const [head, tail] = setSsr(template)
-        .replace('</head>', `${chunkLinks(chunks, manifest)}</head>`)
+    const [head, tail] = applyPublicPath(setSsr(template), publicPath)
+        .replace('</head>', `${chunkLinks(chunks, manifest, publicPath)}</head>`)
         .split(PLACEHOLDER);
 
     // Filled by useApi() during render; resolved entries are streamed to the client
@@ -127,7 +165,7 @@ export function render(
             console.error(error);
             res.statusCode = 500;
             res.setHeader('Content-Type', 'text/html; charset=utf-8');
-            res.end(template);
+            res.end(applyPublicPath(template, publicPath));
         },
         onError(error) {
             didError = true;

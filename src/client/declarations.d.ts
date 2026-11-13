@@ -10,9 +10,9 @@ declare module '*.jpg';
 /**
  * Global variable.
  * Public path for Webpack.
- * This is set by Webpack at build time.
+ * "auto" at build time; overridden at runtime by window.__PUBLIC_PATH__ (see publicPath.ts).
  */
-declare const __webpack_public_path__: string;
+declare let __webpack_public_path__: string;
 
 /**
  * Global variable.
@@ -55,4 +55,10 @@ interface Window {
    * Written by the server's streamed <script> tags, read on hydration.
    */
   __API_DATA__?: Record<string, unknown>;
+
+  /**
+   * Public path chosen by the SSR renderer (e.g. "/app/").
+   * Used for asset/chunk URLs and the router basename. Absent → webpack "auto".
+   */
+  __PUBLIC_PATH__?: string;
 }

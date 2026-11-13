@@ -21,9 +21,15 @@ export interface RouteHandle {
 }
 
 /**
- * Router basename derived from PUBLIC_PATH ("/app/" -> "/app").
+ * Router basename derived from a public path ("/app/" -> "/app").
+ * Accepts absolute URLs too ("https://host/app/" -> "/app"), as produced by publicPath "auto".
  */
-export const basename = (process.env.PUBLIC_PATH || '/').replace(/\/$/, '') || '/';
+export const getBasename = (publicPath = '/') => {
+  const pathname = /^[a-z][a-z\d+.-]*:\/\//i.test(publicPath)
+    ? new URL(publicPath).pathname
+    : publicPath;
+  return pathname.replace(/\/$/, '') || '/';
+};
 
 /**
  * Route config shared by the client and the server.

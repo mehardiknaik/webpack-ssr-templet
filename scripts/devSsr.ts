@@ -9,7 +9,8 @@ type RenderFn = (
   req: IncomingMessage,
   res: ServerResponse,
   template: string,
-  manifest: Record<string, string[]>
+  manifest: Record<string, string[]>,
+  options?: { publicPath?: string }
 ) => void;
 
 const serverConfig = createServerConfig('development');
@@ -51,7 +52,7 @@ const devServer = new WebpackDevServer(
     port: process.env.PORT || clientConfig.devServer?.port,
     // Let every page request fall through to the SSR middleware
     historyApiFallback: false,
-    devMiddleware: { index: false },
+    devMiddleware: { ...clientConfig.devServer?.devMiddleware, index: false },
     static: { directory: path.resolve(__dirname, '../public'), serveIndex: false },
     setupMiddlewares: (middlewares, server) => {
       middlewares.push({
@@ -63,7 +64,9 @@ const devServer = new WebpackDevServer(
               const fs = server.middleware!.context.outputFileSystem;
               const read = (file: string) =>
                 String(fs.readFileSync!(path.join(clientCompiler.outputPath, file)));
-              loadRender()(req, res, read('index.html'), JSON.parse(read('chunks-manifest.json')));
+              loadRender()(req, res, read('index.html'), JSON.parse(read('chunks-manifest.json')), {
+                publicPath: process.env.PUBLIC_PATH || '/'
+              });
             } catch (error) {
               next(error);
             }

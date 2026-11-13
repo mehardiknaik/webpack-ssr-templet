@@ -1,4 +1,5 @@
 import ts from 'typescript';
+//@ts-ignore
 import fs from 'fs';
 import { Compiler, Compilation, WebpackPluginInstance } from 'webpack';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
@@ -68,13 +69,11 @@ class ConfigWebpackPlugin implements WebpackPluginInstance {
           )?.userOptions?.injectConfigScript;
 
           if (injectedScript) {
-            const publicPath = compiler.options.output.publicPath;
-            const prefix = typeof publicPath === 'string' && publicPath !== 'auto' ? publicPath : '';
-
+            // Same prefix HtmlWebpackPlugin uses for its own tags
             data.headTags.unshift({
               tagName: 'script',
               voidTag: false,
-              attributes: { src: `${prefix}${injectedScript}` },
+              attributes: { src: `${data.publicPath}${injectedScript}` },
               meta: { plugin: 'ConfigWebpackPlugin' }
             });
           }

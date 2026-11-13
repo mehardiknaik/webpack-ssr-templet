@@ -11,8 +11,9 @@ import './scripts/loadEnv';
 const config: Configuration = {
   entry: { app: './src/client/index.tsx' },
   output: {
-    // // Absolute so assets resolve on nested routes (e.g. /users/1)
-    publicPath: process.env.PUBLIC_PATH || '/'
+    // Runtime chunk/asset URLs: window.__PUBLIC_PATH__ from the SSR renderer if set
+    // (src/client/publicPath.ts), otherwise derived from the entry <script> src
+    publicPath: 'auto'
   },
   module: {
     rules: [
@@ -64,6 +65,9 @@ const config: Configuration = {
     new HtmlWebpackPlugin({
       template: './src/index.html',
       inject: true,
+      // Absolute so index.html works on nested routes (e.g. /users/1) without SSR.
+      // The SSR renderer rewrites this prefix to its own publicPath.
+      publicPath: process.env.PUBLIC_PATH || '/',
       // Keep comments: SSR injects markup at <!--html-placeholder-->
       minify: {
         collapseWhitespace: true,
