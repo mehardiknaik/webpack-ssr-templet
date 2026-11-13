@@ -65,7 +65,7 @@ export const createServerConfig = (mode: Mode): Configuration => {
           generator: { filename: assetName('images/'), emit: false }
         },
         {
-          test: /\.module\.(css|scss)$/,
+          test: /\.module\.(css|s[ac]ss)$/,
           use: [
             {
               loader: 'css-loader',
@@ -77,17 +77,19 @@ export const createServerConfig = (mode: Mode): Configuration => {
                   exportLocalsConvention: 'camelCase'
                 }
               }
-            }
+            },
+            "sass-loader"
           ]
         },
         {
           // Global CSS is injected by the client bundle; server only needs a no-op module
-          test: /\.(css|scss)$/,
+          test: /\.(css|s[ac]ss)$/,
           use: [
             {
               loader: 'css-loader',
               options: { modules: { mode: 'global', exportOnlyLocals: true } }
-            }
+            },
+            "sass-loader"
           ],
           exclude: /\.module\.(css|scss)$/
         }
