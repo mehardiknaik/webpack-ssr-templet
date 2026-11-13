@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
 import Root from '@/client/Root';
 import { getBasename } from '@/client/routes';
-import '@/client/index.css';
+import '@/client/index.scss';
 
 const container = document.getElementById('root')!;
 // Same value the server used (window.__PUBLIC_PATH__), or the auto-detected one

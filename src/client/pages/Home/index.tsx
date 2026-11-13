@@ -2,7 +2,7 @@ import { Suspense, use, version } from 'react';
 import { browser } from 'react-dom';
 import webpackLogo from '@/client/assets/webpack.png';
 import { isSSR } from '@/client/util/renderMode';
-import style from "./index.module.css"
+import style from "./index.module.scss"
 
 const Home = () => {
   return (

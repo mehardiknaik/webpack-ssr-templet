@@ -40,7 +40,7 @@ const config: Configuration = {
         }
       },
       {
-        test: /\.module\.(css|scss)$/,
+        test: /\.module\.(css|s[ac]ss)$/,
         use: [
           MiniCssExtractPlugin.loader,
           {
@@ -52,12 +52,13 @@ const config: Configuration = {
                 exportLocalsConvention: 'camelCase'
               }
             }
-          }
+          },
+          "sass-loader"
         ]
       },
       {
-        test: /\.(css|scss)$/,
-        use: [MiniCssExtractPlugin.loader, 'css-loader'],
+        test: /\.(css|s[ac]ss)$/,
+        use: [MiniCssExtractPlugin.loader, 'css-loader', "sass-loader"],
         exclude: /\.module\.(css|scss)$/
       }
     ]
