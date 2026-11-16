@@ -1,8 +1,9 @@
-import { Suspense } from 'react';
-import { Link } from 'react-router';
+import { lazy, Suspense } from 'react';
 import { useApi, useApiRefresh } from '@/client/api/ApiCache';
 import { fetchUsers } from '@/client/api/users';
 import style from "./index.module.css"
+
+const User = lazy(() => import("@/client/components/User"))
 
 const UserList = () => {
   const users = useApi('users', fetchUsers);
@@ -11,9 +12,7 @@ const UserList = () => {
     <>
       <ul>
         {users.map((user) => (
-          <li key={user.id}>
-            <Link to={`/users/${user.id}`}>{user.name}</Link>
-          </li>
+          <User key={user.id} user={user} />
         ))}
       </ul>
     </>

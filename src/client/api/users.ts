@@ -1,6 +1,6 @@
 // Fake network latency so SSR streaming / Suspense fallbacks are visible
 
-interface User {
+export interface User {
   name: string
   id: string
   email: string

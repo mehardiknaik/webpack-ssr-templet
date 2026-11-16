@@ -3,22 +3,13 @@ import Layout from '@/client/components/Layout';
 import { lazy } from 'react';
 
 // Code-split pages; the Suspense boundary lives in Layout around <Outlet />.
-// webpackChunkName must match the route's handle.chunk: the SSR server uses it to
-// link only the current page's CSS/JS (see scripts/ChunksManifestPlugin.ts).
-const Home = lazy(() => import(/* webpackChunkName: "page-home" */ '@/client/pages/Home'));
-const About = lazy(() => import(/* webpackChunkName: "page-about" */ '@/client/pages/About'));
-const Users = lazy(() => import(/* webpackChunkName: "page-users" */ '@/client/pages/Users'));
-const UserDetail = lazy(
-  () => import(/* webpackChunkName: "page-user-detail" */ '@/client/pages/UserDetail')
-);
-const NotFound = lazy(
-  () => import(/* webpackChunkName: "page-not-found" */ '@/client/pages/NotFound')
-);
-
-export interface RouteHandle {
-  /** Lazy chunk name (webpackChunkName) of the page rendered by this route */
-  chunk?: string;
-}
+// scripts/babel-plugin-lazy-chunk.js names each chunk and makes SSR link only the
+// rendered page's CSS/JS.
+const Home = lazy(() => import('@/client/pages/Home'));
+const About = lazy(() => import('@/client/pages/About'));
+const Users = lazy(() => import('@/client/pages/Users'));
+const UserDetail = lazy(() => import('@/client/pages/UserDetail'));
+const NotFound = lazy(() => import('@/client/pages/NotFound'));
 
 /**
  * Router basename derived from a public path ("/app/" -> "/app").
@@ -40,11 +31,11 @@ const routes: RouteObject[] = [
     path: '/',
     element: <Layout />,
     children: [
-      { index: true, element: <Home />, handle: { chunk: 'page-home' } },
-      { path: 'about', element: <About />, handle: { chunk: 'page-about' } },
-      { path: 'users', element: <Users />, handle: { chunk: 'page-users' } },
-      { path: 'users/:id', element: <UserDetail />, handle: { chunk: 'page-user-detail' } },
-      { path: '*', element: <NotFound />, handle: { chunk: 'page-not-found' } }
+      { index: true, element: <Home /> },
+      { path: 'about', element: <About /> },
+      { path: 'users', element: <Users /> },
+      { path: 'users/:id', element: <UserDetail /> },
+      { path: '*', element: <NotFound /> }
     ]
   }
 ];

@@ -4,7 +4,7 @@ import commonConfig from './webpack.config.common';
 import { merge } from 'webpack-merge';
 import { codeInspectorPlugin } from 'code-inspector-plugin';
 import pkg from './package.json';
-
+import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 
 process.env.BABEL_ENV = 'development';
 interface Configuration extends WebpackConfiguration {
@@ -32,7 +32,7 @@ const config: Configuration = {
       {
         test: /\.module\.(css|s[ac]ss)$/,
         use: [
-          'style-loader',
+          MiniCssExtractPlugin.loader,
           {
             loader: 'css-loader',
             options: {
@@ -55,7 +55,7 @@ const config: Configuration = {
       {
         test: /\.(css|s[ac]ss)$/,
         use: [
-          'style-loader',
+          MiniCssExtractPlugin.loader,
           {
             loader: 'css-loader',
             options: {
@@ -74,6 +74,7 @@ const config: Configuration = {
     ]
   },
   plugins: [
+    new MiniCssExtractPlugin(),
     new DefinePlugin({
       __DEV__: JSON.stringify(true),
       __PROD__: JSON.stringify(false),

@@ -4,7 +4,8 @@ import { renderToPipeableStream } from 'react-dom/server';
 import { StaticRouter, matchRoutes } from 'react-router';
 import Root from '@/client/Root';
 import { dehydrate, type ApiCache } from '@/client/api/ApiCache';
-import routes, { getBasename, type RouteHandle } from '@/client/routes';
+import routes, { getBasename } from '@/client/routes';
+import { SsrChunksContext } from '@/client/util/withChunk';
 
 /** chunk name -> emitted JS/CSS files (dist/client/chunks-manifest.json) */
 export type ChunksManifest = Record<string, string[]>;
@@ -25,25 +26,6 @@ const ABORT_DELAY = 10000;
 // Crawlers / link-preview bots get the full HTML in one go instead of a stream
 const BOT_USER_AGENT =
     /bot|crawler|spider|crawling|slurp|bingpreview|facebookexternalhit|embedly|whatsapp|telegram|slack|discord|linkedin|lighthouse|headless/i;
-
-/**
- * <link> tags for the lazy page chunks of the matched routes: stylesheet for CSS
- * (styled on first paint, without shipping other pages' CSS) and preload for JS
- * (chunk downloads in parallel with the entry, so hydration isn't delayed).
- */
-function chunkLinks(chunks: string[], manifest: ChunksManifest, publicPath: string) {
-    // Files of the "app" entry are already in index.html (HtmlWebpackPlugin)
-    const entryFiles = new Set(manifest.app || []);
-    const files = new Set(chunks.flatMap((chunk) => manifest[chunk] || []));
-    return [...files]
-        .filter((file) => !entryFiles.has(file))
-        .map((file) =>
-            file.endsWith('.css')
-                ? `<link rel="stylesheet" href="${publicPath}${file}">`
-                : `<link rel="preload" as="script" href="${publicPath}${file}">`
-        )
-        .join('');
-}
 
 /** "app" -> "/app/", "https://cdn.x/app" -> "https://cdn.x/app/" */
 function normalizePublicPath(publicPath: string) {
@@ -105,21 +87,19 @@ export function render(
     const matches = matchRoutes(routes, url, basename);
     const notFound = !matches || matches[matches.length - 1].route.path === '*';
 
-    const chunks = (matches || [])
-        .map(({ route }) => (route.handle as RouteHandle | undefined)?.chunk)
-        .filter((chunk): chunk is string => !!chunk);
-    const [head, tail] = applyPublicPath(setSsr(template), publicPath)
-        .replace('</head>', `${chunkLinks(chunks, manifest, publicPath)}</head>`)
-        .split(PLACEHOLDER);
+    const [head, tail] = applyPublicPath(setSsr(template), publicPath).split(PLACEHOLDER);
 
     // Filled by useApi() during render; resolved entries are streamed to the client
     const apiCache: ApiCache = new Map();
     const sentKeys = new Set<string>();
 
     const app = (
-        <StaticRouter location={url} basename={basename}>
-            <Root apiCache={apiCache} />
-        </StaticRouter>
+        // withChunk (added to lazy() by scripts/babel-plugin-lazy-chunk.js) reads this to link the CSS/JS of the chunks it renders
+        <SsrChunksContext value={{ manifest, publicPath }}>
+            <StaticRouter location={url} basename={basename}>
+                <Root apiCache={apiCache} />
+            </StaticRouter>
+        </SsrChunksContext>
     );
 
     // Browsers: onShellReady streams the shell (with Suspense fallbacks) now, resolved boundaries follow.
