@@ -22,11 +22,20 @@ async function fetchWrapper(
 }
 
 export async function fetchUsers(): Promise<User[]> {
+  await fakeWait(3000)
   const res = await fetchWrapper(`https://jsonplaceholder.typicode.com/users`)
   return res.json();
 }
 
 export async function fetchUser(id: string): Promise<User | undefined> {
+  await fakeWait(5000)
   const res = await fetchWrapper(`https://jsonplaceholder.typicode.com/users/${id}`)
   return res.json();
+}
+
+
+const fakeWait = (time = 1000) => {
+  return new Promise((resolve) => {
+    setTimeout(resolve, time)
+  })
 }

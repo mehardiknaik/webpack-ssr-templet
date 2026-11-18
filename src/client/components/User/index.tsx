@@ -8,9 +8,12 @@ interface UserProps {
 }
 
 const User: FC<UserProps> = ({ user }) => {
-    return (<li className={style.item}>
-        <Link to={`/users/${user.id}`}>{user.name}</Link>
-    </li>)
+    return (
+        <Link className={style.card} to={`/users/${user.id}`}>
+            <div>{user.name}</div>
+            <div>{user.email}</div>
+        </Link>
+    )
 }
 
 export default User

@@ -20,6 +20,7 @@ const Layout = () => {
             to={to}
             end={to === '/'}
             className={({ isActive }) => (isActive ? `${style.link} ${style.active}` : style.link)}
+            prefetch='intent'
           >
             {label}
           </NavLink>

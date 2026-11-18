@@ -1,3 +1,20 @@
-.item {
-    background-color: brown;
+.card {
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+    /* Keeps image corners rounded */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.12);
+}
+
+.skeleton {
+    height: 50px;
 }

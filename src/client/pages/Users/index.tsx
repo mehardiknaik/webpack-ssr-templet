@@ -1,20 +1,20 @@
-import { lazy, Suspense } from 'react';
+import { Suspense, lazy } from 'react';
 import { useApi, useApiRefresh } from '@/client/api/ApiCache';
 import { fetchUsers } from '@/client/api/users';
-import style from "./index.module.css"
+// import { Skeleton, User } from "@/client/components/User"
+import style from "./index.module.scss"
 
 const User = lazy(() => import("@/client/components/User"))
 
+const sk = Array.from({ length: 10 }).fill(1)
+
 const UserList = () => {
   const users = useApi('users', fetchUsers);
-
   return (
     <>
-      <ul>
-        {users.map((user) => (
-          <User key={user.id} user={user} />
-        ))}
-      </ul>
+      {users?.map((user, index) => (
+        <User key={index} user={user} />
+      ))}
     </>
   );
 };
@@ -31,11 +31,17 @@ const Users = () => {
         </button>
       </div>
       {/* Heading is sent in the shell; the list streams in when fetchUsers() resolves */}
-      <Suspense fallback={<p>Loading users...</p>}>
-        <UserList />
-      </Suspense>
+      <div className={style.gridContainer}>
+        <Suspense fallback={sk.map((_, x) => <Skeleton key={x} />)}>
+          <UserList />
+        </Suspense>
+      </div>
     </section>
   );
 };
+
+const Skeleton = () => {
+  return (<div className={`${style.card} ${style.skeleton}`}></div>)
+}
 
 export default Users;

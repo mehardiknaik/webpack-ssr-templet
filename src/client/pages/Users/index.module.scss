@@ -1,0 +1,33 @@
+.container {
+    background-color: rgb(198, 145, 255);
+    padding: 20px;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+}
+
+.header h1 {
+    flex: 1;
+}
+
+.grid-container {
+    display: grid;
+    /* Automatically fits columns, shrinking down to 250px before wrapping */
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+    gap: 1.5rem;
+}
+
+.card {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    /* Keeps image corners rounded */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.skeleton {
+    height: 50px;
+}
