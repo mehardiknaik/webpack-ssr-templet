@@ -9,7 +9,7 @@ const User = lazy(() => import("@/client/components/User"))
 const sk = Array.from({ length: 10 }).fill(1)
 
 const UserList = () => {
-  const users = useApi('users', fetchUsers);
+  const users = useApi('users', fetchUsers, { cache: typeof window !== "undefined" });
   return (
     <>
       {users?.map((user, index) => (

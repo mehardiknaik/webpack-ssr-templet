@@ -22,14 +22,14 @@ async function fetchWrapper(
 }
 
 export async function fetchUsers(): Promise<User[]> {
-  await fakeWait(3000)
   const res = await fetchWrapper(`https://jsonplaceholder.typicode.com/users`)
+  await fakeWait(3000)
   return res.json();
 }
 
 export async function fetchUser(id: string): Promise<User | undefined> {
-  await fakeWait(5000)
   const res = await fetchWrapper(`https://jsonplaceholder.typicode.com/users/${id}`)
+  await fakeWait(5000)
   return res.json();
 }
 
